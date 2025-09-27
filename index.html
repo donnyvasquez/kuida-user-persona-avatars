@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Perfiles de Beneficiarios - Proyecto Kuida</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Warm neutrals with teal/blue accents) -->
+    <!-- Application Structure Plan: A main dashboard view with selectors for 7 personas. Clicking a persona opens a large modal with a tabbed interface for organized content consumption (Info, Diario, Retos, etc.). This modal approach focuses user attention. The diary tab adds a deep qualitative layer. This structure enhances focus and narrative depth compared to an embedded panel. -->
+    <!-- Visualization & Content Choices: Report Info: Perfil Psicográfico -> Goal: Compare traits visually -> Viz: Radar Chart -> Interaction: Chart appears in a modal tab -> Justification: Provides a quick 'personality fingerprint' within the focused modal view -> Library: Chart.js/Canvas. Report Info: Diario Personal -> Goal: Build Empathy -> Viz: Formatted text block -> Interaction: Accessible via tab click -> Justification: Presents the narrative backstory in a readable, immersive format. CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+        }
+        p {
+            margin-block-end: 1.5rem!important;
+        }
+        .active-persona-card {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #0d9488;
+        }
+        .active-tab {
+            border-color: #0d9488;
+            color: #0d9488;
+            background-color: #f0fdfa;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .modal-content-area {
+             max-height: calc(90vh - 100px);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-teal-800">Perfiles de Beneficiarios Ideales</h1>
+            <p class="text-lg text-gray-600 mt-2">Una exploración interactiva de los avatares para el Proyecto Kuida</p>
+        </header>
+
+        <main>
+            <section id="persona-selector" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
+            </section>
+        </main>
+    </div>
+
+    <div id="persona-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-xl w-full max-w-full transform transition-all" style="max-width: 80vw; max-height: 90vh;">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h2 id="modal-title" class="text-2xl font-bold text-teal-800"></h2>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="modal-body" class="p-6 overflow-y-auto modal-content-area">
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const personasData = [
+                 {
+                    id: 1,
+                    nombre: "Sofía Ramírez Vargas",
+                    ocupacion: "Estudiante de SST",
+                    icono: "🎓",
+                    diario: `28 de octubre, 2025. Martes.\n\n10:18 PM\n\nEstoy sentada frente a la pantalla, con la luz azul del monitor pintando sombras en mi cuarto. Debería estar terminando el marco teórico de la tesis, pero tengo abiertas veinte pestañas del navegador, todas sobre lo mismo: ofertas de trabajo para profesionales de SST. "Se requiere especialista con 5 años de experiencia". "Indispensable certificación NEBOSH". "Experiencia comprobada en auditorías internas ISO 45001".\n\nCierro la laptop de golpe. Un nudo se forma en mi garganta. A veces siento que estoy corriendo hacia una meta que se aleja cinco metros por cada uno que avanzo.\n\nHoy en la pasantía fue uno de esos días difíciles. El ingeniero Méndez, mi jefe, me pidió que revisara la evaluación de riesgos para un nuevo puesto de soldadura. Me sentí emocionada. ¡Por fin! Algo real, algo donde podía aplicar todo lo que he pasado noches enteras estudiando. Me encerré en la pequeña oficina que me prestaron, saqué mis apuntes, abrí la GTC-45 en mi tablet y me puse a trabajar. Estuve tres horas concentrada, identifiqué cinco peligros que no habían considerado, propuse tres controles de ingeniería que vimos en la clase de Higiene Industrial y redacté un informe de dos páginas, orgullosa de mi rigurosidad.\n\nCuando se lo presenté, el ingeniero Méndez apenas lo miró. Lo hojeó por encima, con esa sonrisita condescendiente que reserva para mí. "Ah, muy bien, Sofía. Muy académico", dijo. Luego, se giró hacia el supervisor de planta y le gritó: "¡Oye, Pacho! Asegúrate de que los muchachos se pongan la careta y ponles un extintor cerca, ¿listo?". Y eso fue todo. Mi análisis, mis controles de ingeniería, mi informe... todo reducido a un extintor y a un grito. Pacho me miró y me guiñó un ojo, como diciendo "tranquila, niña, así es el mundo real".\n\nMe sentí diminuta. Una niña, exactamente. Una sabelotodo con un título que aún no tiene y un montón de teorías que a nadie le importan.\n\nPaso cinco años en la universidad aprendiendo sobre el método de William T. Fine, sobre la jerarquía de controles, sobre la importancia de eliminar el riesgo desde la fuente. Y la realidad es un grito y un extintor. ¿Para esto son las ojeras, el estrés de los parciales, la deuda que mis padres están asumiendo? A veces me pregunto si elegí bien. Amo la idea de proteger a la gente, de verdad que sí. Amo el reto intelectual de la prevención. Pero me aterra la idea de graduarme para convertirme en la "señorita de seguridad" que solo persigue a los trabajadores para que usen el casco, mientras las verdaderas decisiones se toman en otro lado.\n\nMi sueño es diferente. Sueño con sentarme en una mesa con los gerentes y mostrarles un dashboard con datos, no con opiniones. Sueño con usar un software que simule un accidente y demuestre el impacto de una inversión en seguridad. Sueño con hablar de análisis predictivo, de cultura organizacional, de factores psicosociales. Quiero ser una estratega, no una capataz.\n\nPero el miedo me carcome. Miedo a que mi currículum, lleno de buenas notas pero vacío de "experiencia comprobada", termine en el fondo de una pila de hojas de vida. Miedo a no poder pagar esas certificaciones que parecen la llave mágica para entrar al mundo de los "profesionales de verdad". Miedo a que, después de todo este esfuerzo, termine en un trabajo que no me desafíe, que me apague la chispa y me convierta en una cínica como tantos otros. Miedo a decepcionar a mis padres, que han puesto toda su fe en mí.\n\nAbro la laptop de nuevo. Busco "cursos gratuitos de análisis de datos para SST". Quizás si aprendo algo que ellos no sepan, algo nuevo, algo tecnológico... quizás así pueda hacerme un lugar. Quizás así, la próxima vez, me escuchen.\n\nSolo necesito una oportunidad para demostrar que todo esto que tengo en la cabeza sirve para algo más que para pasar un examen.\n\nSofía.`,
+                    infoGeneral: { "Edad": "21 años", "Ubicación": "Bogotá, Colombia", "Nivel Educativo": "Estudiante universitaria de último semestre de Seguridad y Salud en el Trabajo.", "Ocupación Actual": "Estudiante y pasante en el área de SST." },
+                    situacion: { "Principales Retos": "Brecha entre teoría y práctica, dificultad para diferenciarse en el mercado laboral, acceso a conocimiento académico desactualizado, falta de red de contactos y mentoría.", "Impacto Cotidiano": "Incertidumbre sobre su futuro, frustración al no poder aplicar sus conocimientos, ansiedad por la competencia profesional.", "Carencias Críticas": "Acceso a herramientas tecnológicas profesionales, experiencia práctica verificable, mentoría especializada." },
+                    metas: { "Logros Deseados con Kuida": "Ganar experiencia práctica a través de simuladores, crear un portafolio digital, acceder a conocimiento de vanguardia, conectar con mentores y dominar herramientas predictivas.", "Objetivos Profesionales": "Convertirse en una 'Científica de Datos de Seguridad', liderar la implementación de sistemas de IA en SST y lograr la independencia financiera al graduarse.", "Estilo de Vida Soñado": "Un trabajo definido por el impacto y el análisis de datos, con flexibilidad, aprendizaje continuo y reconocimiento como una profesional innovadora." },
+                    psicografico: { "Valores": "Excelencia, Impacto Social, Innovación, Integridad, Crecimiento Continuo.", "Rasgos (y Scores)": { "Proactiva": 5, "Analítica": 4, "Ambiciosa": 5, "Idealista": 3, "Curiosa": 4 }, "Intereses": "Tecnología predictiva, aprendizaje gamificado, visualización de datos, eficiencia en el aprendizaje, networking inteligente." },
+                    dolor: { "Problemas Críticos": "Necesita un puente para cerrar la brecha entre la teoría académica y las habilidades prácticas que demanda el mercado.", "Emociones Asociadas": ["Incertidumbre", "Frustración", "Ansiedad", "Esperanza", "Empoderamiento"] },
+                    comportamiento: { "Canales de Información": "LinkedIn, grupos académicos (WhatsApp), webinars, recomendaciones de docentes, blogs especializados.", "Barreras para la Adopción": "Financiera (necesita planes gratuitos/educativos), credibilidad (aún es estudiante), posible brecha de conocimiento en ciencia de datos.", "Factores de Decisión": "Acceso gratuito, posibilidad de construir un portafolio, obtención de certificaciones digitales." },
+                    impacto: { "Transformación": "Pasará de ser una estudiante con incertidumbre a una profesional cotizada y segura de sí misma, acelerando su carrera profesional.", "Resultados Esperados": "Conseguir un empleo de primer nivel con un salario superior al promedio, eliminar el 'síndrome del impostor' y liderar proyectos de mejora basados en datos desde el inicio de su carrera." }
+                },
+                {
+                    id: 2,
+                    nombre: "Carlos Quispe Mendoza",
+                    ocupacion: "Microempresario",
+                    icono: "🛠️",
+                    diario: `03 de noviembre, 2025. Lunes.\n\n9:45 PM\n\nHoy no vendí casi nada. Lunes flojo. Doña Elvira, la del puesto 3B, dice que es por el feriado que viene, que la gente guarda la plata. Ojalá sea eso. Porque las cuentas no esperan al feriado. La tela que compré la semana pasada, esa que me fío Don Alberto, se vence el miércoles. Y hoy solo hice para pagar la luz del taller y el almuerzo de los muchachos.\n\nA las 6, cuando ya estábamos cerrando, apareció el "Chino". No el que vende botones, el otro. El que presta plata. Pasó despacio por el frente de mi puesto, me miró y se tocó la oreja. La señal. Mañana tengo que pagarle la cuota. Y no la tengo completa. Me pasé el resto de la tarde con un hielo en el estómago, pensando.\n\nHace cinco años, cuando me botaron de la fábrica grande, juré que nunca más dependería de un jefe. "Seré mi propio jefe", le dije a mi esposa, lleno de orgullo. Y aquí estoy. Soy el jefe, el obrero, el vendedor, el contador y el que limpia el baño. Y también soy el esclavo de mis propias deudas.\n\nMi sueño no era tan grande. Yo solo quería un negocio honesto. Un taller donde mis máquinas, aunque viejas, cosieran derecho. Quería pagarles un sueldo justo a mis empleados, verlos progresar. Quería que mis hijos pudieran estudiar sin preocuparse, que no tuvieran que pasar por lo que yo pasé. Quería la tranquilidad de saber que, si trabajo duro, las cosas van a estar bien.\n\nPero la tranquilidad no llega. Trabajo más duro que nadie y solo alcanzo a sobrevivir. Cada día es una carrera contra el tiempo y contra los precios de los otros talleres, esos que no pagan impuestos, ni seguro, ni nada. ¿Cómo compito con eso? Bajo mis precios hasta que ya no gano casi nada. Acepto trabajos que sé que son una matada por unas cuantas monedas. Y cuando la plata no alcanza, aparece gente como el "Chino". Y la soga se aprieta más.\n\nHoy, mientras cosía, la aguja de la máquina de Juancito se partió y un pedazo le saltó cerca del ojo. No le pasó nada, gracias a Dios. Pero por un segundo, se me heló la sangre. Esa máquina tiene más años que yo. Le he hecho mil arreglos caseros. Sé que es un peligro. Sé que el cableado del taller es un desastre. Sé que los muchachos a veces trabajan sin mascarilla cuando hay mucho polvo de tela. Lo sé todo. Pero, ¿qué hago? ¿Compro una máquina nueva o pago la cuota del "Chino"? ¿Arreglo los cables o compro la tela para el pedido de mañana?\n\nMe siento atrapado. Atrapado entre lo que debería hacer y lo que puedo hacer. Me siento un mal jefe, un mal empresario. Un fracasado.\n\nMiro la foto de mis hijos que tengo pegada en la pared. Sus sonrisas. Por ellos es todo esto. Y al mismo tiempo, me da miedo que este negocio de mierda me quite la posibilidad de darles un futuro. Un accidente, una multa grande... y todo se viene abajo.\n\nA veces sueño despierto. Sueño que llega un cliente grande, de esos de marca, y me da un contrato bueno. Sueño que voy al banco y me dan un préstamo de verdad, con intereses normales, para cambiar todas las máquinas. Sueño con un taller limpio, iluminado, seguro. Con tener todos mis papeles en regla. Sueño con el día en que pueda decirle al "Chino" que no lo necesito más.\n\nQué tontería. Mañana hay que levantarse a las 4 AM para ir al mercado a buscar un remate de tela. La lucha sigue.\n\nCarlos.`,
+                    infoGeneral: { "Edad": "45 años", "Ubicación": "Gamarra, Lima, Perú.", "Nivel Educativo": "Educación secundaria completa.", "Ocupación Actual": "Dueño y operario de un micro-taller de confección textil." },
+                    situacion: { "Principales Retos": "Competencia informal, desconfianza en instituciones, analfabetismo digital, acceso nulo a financiamiento formal, cultura de la inmediatez.", "Impacto Cotidiano": "Estrés financiero constante, vulnerabilidad ante fiscalizaciones o accidentes, estancamiento del negocio.", "Carencias Críticas": "Educación empresarial básica, acceso a microcréditos, herramientas tecnológicas simples, asociatividad gremial." },
+                    metas: { "Logros Deseados con Kuida": "Obtener un diagnóstico de riesgos instantáneo y visual, recibir asistencia virtual para la formalización, acceder a micro-capacitaciones por WhatsApp, conectarse con un mercado justo.", "Objetivos Profesionales": "Formalizar su negocio, romper el ciclo de deuda con prestamistas informales, darles una buena educación a sus hijos.", "Estilo de Vida Soñado": "Un negocio predecible y seguro, la tranquilidad de cumplir con la ley, tener tiempo libre para su familia y ser un ejemplo de progreso en su comunidad." },
+                    psicografico: { "Valores": "Responsabilidad Familiar, Trabajo Duro, Honestidad (Palabra), Pragmatismo, Autonomía.", "Rasgos (y Scores)": { "Luchador": 5, "Escéptico": 4, "Orgulloso": 3, "Intuitivo": 4, "Paternalista": 3 }, "Intereses": "Soluciones visuales y simples, resultados inmediatos y tangibles, validación por pares, lenguaje cotidiano." },
+                    dolor: { "Problemas Críticos": "Necesita soluciones extremadamente simples que le ayuden a ver y mitigar sus riesgos más básicos sin costo y sin jerga técnica.", "Emociones Asociadas": ["Miedo", "Agotamiento", "Desconfianza", "Estancamiento"] },
+                    comportamiento: { "Canales de Información": "Boca a boca, proveedores de confianza, grupos de WhatsApp, observación directa.", "Barreras para la Adopción": "Analfabetismo digital, desconfianza innata, falta de tiempo percibida, cualquier tipo de costo.", "Factores de Decisión": "Prueba social (ver a un amigo usarlo), simplicidad radical, beneficio inmediato, acompañamiento humano." },
+                    impacto: { "Transformación": "Pasará de ser un 'sobreviviente' informal a un empresario formal y orgulloso, con control sobre su negocio y su futuro.", "Resultados Esperados": "Formalizar su negocio en 6 meses, aumentar su facturación al acceder a clientes formales, obtener su primer microcrédito y, sobre todo, alcanzar la paz mental." }
+                },
+                {
+                    id: 3,
+                    nombre: "Javier Morales Rivas",
+                    ocupacion: "Consultor HSEQ",
+                    icono: "📊",
+                    diario: `17 de octubre, 2025. Viernes.\n\n1:14 AM (Hora de Santiago de Chile). Desde un hotel en Antofagasta.\n\nLlevo tres días en esta faena minera. El polvo del desierto se mete por todas partes, hasta en el alma. Acabo de terminar de consolidar las notas de la auditoría de hoy. Son las 1:14 AM. Mi vuelo de regreso sale a las 6 AM. Llegaré a Santiago destrozado, justo a tiempo para la presentación de ballet de mi hija a las 11. Y el lunes tengo que entregar el informe final de esto. Un informe de 80 páginas que, seamos honestos, probablemente solo dos personas leerán por encima.\n\nHoy fue la reunión de cierre con la gerencia. Les presenté los hallazgos. Tres de ellos eran críticos, de esos que te ponen los pelos de punta. Un sistema de bloqueo y etiquetado deficiente en el área de chancado que es, literalmente, una tragedia esperando a ocurrir. Lo expliqué con datos, con estadísticas, con fotos. Mostré la probabilidad, el impacto potencial. Pura lógica.\n\nLa respuesta del Gerente de Operaciones: "Gracias, Javier. Muy completo tu análisis. Lo revisaremos en el próximo comité de presupuesto para ver qué se puede hacer. Sabes cómo están las cosas con el precio del cobre".\n\n"Ver qué se puede hacer". Es la frase más peligrosa en mi profesión. Es el eufemismo corporativo para "no vamos a hacer nada a menos que nos obliguen". Y mi trabajo, mi carísimo trabajo, termina archivado en una carpeta digital llamada "Pendientes".\n\nMe pagan una fortuna para venir hasta el lugar más seco del mundo a decirles cómo evitar que su gente muera, y ellos lo meten en la misma cola que la compra de nuevas sillas para la cafetería. Y yo tengo que sonreír, asentir y decir "entiendo perfectamente".\n\n¿En qué momento mi trabajo se convirtió en esto? Yo no estudié ingeniería, ni hice un máster, ni me certifiqué hasta las cejas para ser un burócrata de lujo. Mi sueño era diseñar sistemas. Sistemas elegantes, eficientes, inteligentes. Quería usar mi cerebro para crear entornos de trabajo donde la seguridad fuera una consecuencia natural de un buen diseño, no una imposición molesta. Quería ser un estratega, un arquitecto de la resiliencia organizacional.\n\nEn cambio, paso el 80% de mi tiempo en un ciclo infernal: viajo, audito, detecto los mismos problemas de siempre, los escribo en informes larguísimos, peleo para que me presten atención y luego viajo a otro lugar para hacer exactamente lo mismo. Vendo mis horas, mi vista, mi tiempo lejos de mi familia. Y mi mayor habilidad se ha convertido en redactar "no conformidades" de una manera que suene lo suficientemente alarmante pero no demasiado ofensiva. Es absurdo.\n\nMe aterra la idea de volverme obsoleto. La tecnología avanza a una velocidad brutal. Ya hay software que puede hacer la mitad de mi trabajo de auditoría. La IA puede analizar más datos en un segundo de los que yo puedo analizar en un año. Y yo sigo usando plantillas de Word y hojas de Excel. Me siento como un taxista de lujo en la era de Uber.\n\nMi miedo más profundo no es perder un cliente. Es que un día ocurra un accidente fatal en esa área de chancado. Y cuando investiguen, encontrarán mi informe, mi advertencia clara y documentada. Y yo tendré la miserable satisfacción de haber tenido razón. Una razón que no le servirá de nada al trabajador fallecido ni a su familia.\n\nNecesito reinventarme. Necesito una herramienta que haga el trabajo pesado por mí, que automatice los informes, que analice los datos y me libere para hacer lo que solo yo puedo hacer: pensar, estrategizar, convencer. Quiero vender *insights*, no horas-hombre. Quiero mostrarles un modelo predictivo que diga: "tienen un 85% de probabilidad de un accidente grave aquí en los próximos 3 meses". A ver si eso también lo meten en el comité de presupuesto.\n\nQuizás así podría trabajar desde Santiago, ver a mi hija en su presentación de ballet sin ojeras, y sentir que mi inteligencia está creando un valor real. Un valor que va más allá de un informe impecable acumulando polvo digital en un servidor en medio del desierto.\n\nJavier.`,
+                    infoGeneral: { "Edad": "38 años", "Ubicación": "Santiago de Chile, Chile.", "Nivel Educativo": "Ingeniero Industrial con Máster en Sistemas Integrados de Gestión (HSEQ).", "Ocupación Actual": "Consultor Senior y Auditor Líder HSEQ independiente." },
+                    situacion: { "Principales Retos": "Comoditización del servicio, obsolescencia rápida del conocimiento, resistencia cultural en clientes, fragmentación de herramientas de software.", "Impacto Cotidiano": "Presión sobre la rentabilidad, estrés por la actualización continua, frustración profesional, riesgo de error por manejo ineficiente de datos.", "Carencias Críticas": "Una plataforma 'todo en uno' para consultores, bases de datos legislativas centralizadas, formación en nuevos riesgos (psicosociales, IA)." },
+                    metas: { "Logros Deseados con Kuida": "Automatizar la generación de informes, ofrecer servicios de análisis predictivo, realizar vigilancia regulatoria inteligente, escalar su conocimiento a través de cursos online.", "Objetivos Profesionales": "Transformar su práctica en una firma 'boutique', generar ingresos escalables, reducir sus viajes y convertirse en un referente regional.", "Estilo de Vida Soñado": "Libertad intelectual y financiera, un impacto exponencial a través de la tecnología, ser dueño de su tiempo y tener reconocimiento internacional." },
+                    psicografico: { "Valores": "Excelencia Profesional, Eficiencia, Credibilidad, Racionalidad, Innovación Estratégica.", "Rasgos (y Scores)": { "Analítico": 5, "Estratégico": 5, "Exigente": 4, "Autodidacta": 4, "Asertivo": 3 }, "Intereses": "Inteligencia de negocios, automatización de tareas, benchmarking, análisis predictivo, escalabilidad." },
+                    dolor: { "Problemas Críticos": "Necesita una herramienta que automatice el trabajo de bajo valor para liberar su tiempo para el análisis estratégico y que le permita ofrecer servicios innovadores que lo diferencien.", "Emociones Asociadas": ["Impaciencia", "Presión", "Aislamiento", "Carga Mental", "Excitación Intelectual"] },
+                    comportamiento: { "Canales de Información": "Publicaciones internacionales, LinkedIn (uso avanzado), congresos, investigación académica, demos de proveedores.", "Barreras para la Adopción": "Falta de integración (APIs), seguridad de datos de clientes, justificación del ROI, curva de aprendizaje.", "Factores de Decisión": "Ventaja competitiva clara, eficiencia cuantificable, prueba gratuita completa, calidad del soporte técnico." },
+                    impacto: { "Transformación": "Evolucionará de ser un ejecutor de auditorías a un asesor estratégico que vende insights, recuperando el equilibrio vida-trabajo.", "Resultados Esperados": "Reducir su tiempo de reporte en un 70%, lanzar una nueva línea de servicios predictivos, aumentar su ingreso neto mientras reduce sus horas de trabajo." }
+                },
+                {
+                    id: 4,
+                    nombre: "Isabela Ferreira Costa",
+                    ocupacion: "Pequeña Empresaria",
+                    icono: "🏢",
+                    diario: `15 de noviembre, 2025. Sábado.\n\n11:30 PM\n\nAcabo de terminar de revisar el pedido grande que sale el lunes para el hotel de Bávaro. Debería estar durmiendo, pero mi cabeza no para. Doy vueltas y vueltas sobre lo mismo: el flujo de caja. Me pagarán este pedido en 60 días. Sesenta. Pero yo tuve que pagar la materia prima la semana pasada, y la quincena de los muchachos es el próximo viernes. Es como intentar llenar una piscina con un gotero mientras hay un desagüe abierto.\n\nHoy mi hijo mayor, que estudia ingeniería, vino a la planta. Me miraba con orgullo, pero también con preocupación. "¿Mami, por qué no tienes un sistema de ventilación mejor en el área de mezclado? El olor a químico es muy fuerte". Intenté explicarle que un extractor industrial bueno cuesta lo que gano en dos meses. Me miró y no dijo más, pero sé lo que pensaba. Lo vi en sus ojos: "esto no es seguro".\n\nY me duele. Me duele en el alma, porque tiene razón. Sé que no es seguro. Sé que las luces parpadean. Sé que el piso del almacén necesita una capa antideslizante. Sé que a veces los muchachos se saltan los guantes porque los que compramos son incómodos. Lo sé todo, y cada uno de esos saberes es una espina que se me clava un poco más profundo cada día.\n\nMi sueño era simple. Construir algo mío. Algo que me diera independencia y que me permitiera darle trabajo a la gente de mi comunidad. Quería tener una empresa de la que mis hijos se sintieran orgullosos. Una empresa "bien hecha", como decía mi papá.\n\nPero ser una pequeña empresaria aquí es una batalla diaria contra gigantes. Compito contra empresas enormes que importan productos más baratos. Lucho con una burocracia que parece diseñada para que uno se rinda. Y vivo con la soga al cuello por los plazos de pago de los clientes grandes, esos mismos clientes que me exigen tener certificaciones de calidad que cuestan una fortuna.\n\nHace un mes, perdí el contrato con una cadena de hoteles internacional. Me lo dijeron claro: "Isabela, tu producto es excelente, pero no tienes la certificación ISO 9001 y tu plan de seguridad y salud no está documentado". Sentí que me daban una bofetada. ¿Cómo les explico que mi plan de seguridad está en mi cabeza, en mi preocupación diaria, en cada vez que le digo a un empleado "cuidado con eso"? ¿Cómo les explico que no puedo pagarle a un consultor 10,000 dólares para que me escriba en un papel bonito lo que yo ya sé que tengo que hacer pero no puedo costear?\n\nMe siento abrumada. Soy la gerente, la contadora, la vendedora y la jefa de seguridad. Y a veces siento que estoy fallando en todos los frentes. Mi mayor miedo es que todo este sacrificio no sirva de nada. Que un día, Dios no lo quiera, ocurra un accidente grave. Que un empleado se queme con un químico. Y que todo se vaya al diablo. No solo el negocio, sino la vida de una persona, la tranquilidad de mi familia. Ese miedo no me deja dormir.\n\nNecesito ayuda. No quiero un regalo, quiero una herramienta. Algo que me simplifique las cosas. Que me "traduzca" esas normas complicadas a un plan de acción que yo pueda seguir. Que me ayude a generar esos benditos papeles que piden los clientes. Que me demuestre que ser segura y ser rentable pueden ir de la mano.\n\nSolo quiero la oportunidad de competir en igualdad de condiciones. De demostrar que mi pequeña empresa "bien hecha" puede ser tan buena como cualquiera.\n\nIsabela.`,
+                    infoGeneral: { "Edad": "52 años", "Ubicación": "Santo Domingo, República Dominicana.", "Nivel Educativo": "Licenciatura en Administración de Empresas.", "Ocupación Actual": "Propietaria de una pyme de manufactura de productos de limpieza con 15 empleados." },
+                    situacion: { "Principales Retos": "Complejidad y costo de las regulaciones, dificultad para demostrar calidad a clientes grandes, riesgos químicos desconocidos, capacitación costosa, falta de un sistema de gestión formal.", "Impacto Cotidiano": "Agobio por la carga administrativa, frustración por perder contratos, miedo constante a accidentes graves.", "Carencias Críticas": "Financiamiento para seguridad, educación sobre normativas, tecnología accesible, asesoría asequible." },
+                    metas: { "Logros Deseados con Kuida": "Generar Hojas de Seguridad automáticamente, obtener una certificación digital, recibir asesoría regulatoria virtual, capacitar con micro-módulos.", "Objetivos Profesionales": "Convertirse en proveedora del sector hotelero, lograr rentabilidad sostenida y poder delegar la operación diaria.", "Estilo de Vida Soñado": "Ser una empresaria estratégica, tener tranquilidad operativa y financiera, y disfrutar de sus fines de semana." },
+                    psicografico: { "Valores": "Responsabilidad, Calidad del producto, Trato Justo, Crecimiento Sostenible, Comunidad.", "Rasgos (y Scores)": { "Maternalista": 4, "Determinada": 5, "Práctica": 4, "Cautelosa": 3, "Abrumada": 4 }, "Intereses": "Tecnología como guía simplificada, eficiencia operativa, gestión de calidad, capacitación accesible, diferenciación de mercado." },
+                    dolor: { "Problemas Críticos": "Necesita una herramienta que simplifique el cumplimiento normativo y le permita demostrar su calidad para acceder a mejores mercados.", "Emociones Asociadas": ["Agobio", "Frustración", "Miedo", "Esperanza", "Orgullo"] },
+                    comportamiento: { "Canales de Información": "Asociaciones gremiales, recomendaciones de asesores, boca a boca con pares, banca, prensa de negocios.", "Barreras para la Adopción": "Financiera (flujo de caja), falta de tiempo percibida, complejidad percibida, resistencia del personal.", "Factores de Decisión": "Casos de éxito de pymes similares, modelo de precios flexible, implementación 'llave en mano'." },
+                    impacto: { "Transformación": "Pasará de ser una 'todóloga' abrumada a una CEO estratégica que dirige un negocio seguro, formal y en crecimiento.", "Resultados Esperados": "Firmar contratos con grandes clientes, reducir los incidentes en planta, aumentar su rentabilidad y, finalmente, delegar con confianza." }
+                },
+                {
+                    id: 5,
+                    nombre: "Dr. Alejandro Benítez",
+                    ocupacion: "Secretario de Salud",
+                    icono: "🏥",
+                    diario: `22 de octubre, 2025. Miércoles.\n\n9:27 PM\n\nHoy el alcalde me devolvió la propuesta del programa "Finca Segura". Con una nota adhesiva amarilla pegada en la primera página. Decía: "Alejandro, buena iniciativa, pero no hay presupuesto. La gente pide que arreglemos el parque principal. Enfoquémonos en eso, que es lo que se ve".\n\nLeí la nota tres veces. Luego, guardé la carpeta de 50 páginas, con sus estadísticas, sus justificaciones y su plan piloto, en el cajón inferior de mi escritorio. Junto con la propuesta del programa de salud visual para comerciantes del año pasado y el plan de vigilancia de calidad del agua de hace dos. Es el cementerio de las buenas ideas.\n\nVine a este municipio creyendo que podía hacer una diferencia. Dejé un puesto cómodo en el hospital de la capital por la promesa de trabajar en la raíz de los problemas, en la prevención. Mi sueño era, y sigue siendo, construir un modelo de salud pública para un pueblo pequeño. Un modelo inteligente, proactivo, que demuestre que la salud se construye en las fincas, en las tiendas y en las escuelas, no solo en los hospitales.\n\nPero la realidad de la gestión pública es un monstruo burocrático alimentado por presupuestos anémicos y ciclos políticos de cuatro años. Todo tiene que ser visible, inaugurado, fotogénico. Un parque remodelado da votos. Una campaña de prevención que evita 10 accidentes de machete en fincas remotas... eso no sale en las noticias. Es un éxito invisible. Y en política, lo invisible no existe.\n\nHoy me llegó el consolidado de atenciones del puesto de salud de la vereda La Esperanza. En lo que va de año: 12 casos de dermatitis severa por contacto con agroquímicos, 8 casos de lumbalgia crónica en recolectores de café, y 3 accidentes con herramientas de corte que requirieron sutura. Y esos son solo los que consultan. La mayoría simplemente se aguanta, normaliza el dolor, asume que "así es el campo".\n\nY yo tengo los datos. Tengo la evidencia. Sé que con una inversión mínima en guantes de nitrilo, en fajas ergonómicas y en talleres de capacitación de 1 hora, podríamos reducir esas cifras a la mitad. Sé que ese programa de "Finca Segura" que hoy murió en mi escritorio le ahorraría al municipio más dinero en tratamientos de lo que costaría implementarlo. Lo sé yo, lo sabe la ciencia de la salud pública. Pero no sé cómo hacerlo "visible" para el alcalde. No sé cómo competir contra un tobogán nuevo en el parque.\n\nMe siento profundamente frustrado. Es una impotencia que cala los huesos. Es como ser un médico que tiene la cura en la mano, pero el paciente se niega a tomarla porque prefiere gastar el dinero en un cuadro para la sala.\n\nMi mayor miedo es que pasen mis cuatro años de gestión y que el único legado que deje sea una administración eficiente de la escasez. Que los problemas de salud prevenibles que encontré al llegar sigan siendo los mismos al irme. Me aterra la idea de convertirme en un burócrata más, uno que se resignó a que las cosas son como son.\n\nNecesito una forma de hacer visible lo invisible. Necesito un mapa, un tablero, algo que le pueda mostrar al alcalde en su celular y decirle: "Mire, señor alcalde, esta mancha roja es una bomba de tiempo de enfermedades respiratorias en esta vereda. Y esta es la intervención que la puede apagar. Y aquí está cómo mediremos el éxito en tiempo real".\n\nQuizás si les hablo en el idioma de los datos, de los gráficos, del impacto visual, quizás así pueda salvar alguna de mis ideas del cementerio que tengo en el cajón.\n\nAlejandro.`,
+                    infoGeneral: { "Edad": "48 años", "Ubicación": "Municipio de Salento, Quindío, Colombia.", "Nivel Educativo": "Médico con especialización en Salud Pública.", "Ocupación Actual": "Secretario de Salud municipal." },
+                    situacion: { "Principales Retos": "Presupuesto limitado, población dispersa, falta de datos locales, normalización del riesgo, cortoplacismo político.", "Impacto Cotidiano": "Toma de decisiones subóptimas, ineficacia de campañas, frustración profesional por no poder aplicar la prevención.", "Carencias Críticas": "Fondos para prevención, tecnología para vigilancia epidemiológica, personal especializado en SST." },
+                    metas: { "Logros Deseados con Kuida": "Crear un mapa de riesgos en tiempo real, lanzar campañas hiper-segmentadas, optimizar el presupuesto con IA, generar informes de impacto automáticos.", "Objetivos Profesionales": "Crear un modelo de gestión de salud pública preventiva replicable, posicionar a su municipio como referente y reducir costos de atención.", "Estilo de Vida Soñado": "Una gestión basada en datos, con impacto visible, trabajando en colaboración con la comunidad y dejando un legado de prevención." },
+                    psicografico: { "Valores": "Servicio Público, Equidad, Decisiones Basadas en Evidencia, Prevención, Transparencia.", "Rasgos (y Scores)": { "Metódico": 5, "Empático": 4, "Comunicador": 4, "Perseverante": 4, "Estratega": 3 }, "Intereses": "Inteligencia en salud pública, optimización de recursos, tecnología para la equidad, visualización de datos." },
+                    dolor: { "Problemas Críticos": "Necesita una herramienta para hacer 'visible lo invisible': demostrar con datos dónde están los problemas para justificar y dirigir la inversión en prevención.", "Emociones Asociadas": ["Frustración", "Impotencia", "Esperanza", "Validación", "Optimismo"] },
+                    comportamiento: { "Canales de Información": "Canales gubernamentales, publicaciones académicas, congresos, red de colegas, cooperación internacional.", "Barreras para la Adopción": "Burocracia y contratación pública, integración con sistemas existentes, sostenibilidad a largo plazo, seguridad de datos de salud.", "Factores de Decisión": "Modelo de convenio (no de compra), caso de éxito en otro municipio, alineación con el plan de desarrollo, piloto sin costo." },
+                    impacto: { "Transformación": "Pasará de ser un administrador reactivo de la escasez a un estratega predictivo de la salud pública.", "Resultados Esperados": "Reducir la tasa de accidentes laborales en un 25%, presentar un caso de éxito a nivel nacional y dejar un sistema de vigilancia inteligente." }
+                },
+                 {
+                    id: 6,
+                    nombre: 'Ricardo "Richie" Paredes',
+                    ocupacion: "Empleado de Mediana Empresa",
+                    icono: "👷",
+                    diario: `05 de noviembre, 2025. Miércoles.\n\n11:12 PM\n\nLlegué a casa hace una hora. Todavía me huele la ropa a metal quemado. Me senté a comer lo que mi esposa me guardó, pero no tenía hambre. Solo pensaba en la cara de Toño. El susto que tenía.\n\nHoy, la prensa 3 casi le arranca la mano. La máquina se trabó, él intentó sacar la pieza atascada, y el sensor de seguridad, ese que hemos reportado tres veces que falla, no funcionó. La prensa bajó. Si no es porque Memo, que estaba al lado, le gritó y lo empujó, hoy estaríamos contando una desgracia. Toño solo se raspó el brazo. Pero todos vimos lo que pudo haber pasado. Vimos la mancha de aceite en el piso donde debería haber estado su mano.\n\nEl supervisor llegó corriendo, no para ver cómo estaba Toño, sino para apagar la máquina y poner un letrero de "en mantenimiento". Mañana vendrá el técnico, le hará un arreglo rápido y el viernes la máquina estará funcionando otra vez. Y el sensor volverá a fallar en un mes. Y todos seguiremos trabajando con ese nudo en el estómago.\n\nDespués del turno, en el vestidor, nadie hablaba de otra cosa. "Casi se lo lleva el payaso", "esa máquina está maldita", decían. Yo les recordé que el comité de seguridad, donde yo estoy, ya había pasado el reporte de ese sensor. Tres veces. Con la firma de todos.\n\n"¿Y de qué sirve, Richie?", me dijo Memo. "Esos papeles los usan para limpiar el aceite del piso. A ellos no les importa. Solo les importa que no pare la producción".\n\nY tiene razón. Y eso es lo que me quema por dentro. Esta rabia, esta impotencia. Soy el representante de seguridad de los trabajadores. Un título bonito en un papel. Pero en la práctica, soy un adorno. Voy a las reuniones, me dan café y galletas, escuchan mis "preocupaciones", anotan en una libreta y nunca pasa nada.\n\nMi sueño cuando acepté estar en el comité no era este. Yo creía que podíamos hacer un cambio. Creía que si nos organizábamos y hablábamos con respeto, nos escucharían. Soñaba con un lugar de trabajo donde uno no tuviera que elegir entre su seguridad y su sueldo. Un lugar donde la palabra "seguridad" no fuera un chiste.\n\nPero la realidad es que tenemos miedo. Miedo de quejarnos mucho y que nos pongan en la lista negra. Miedo de negarnos a operar una máquina y que nos acusen de insubordinación. Miedo de perder el trabajo, porque todos tenemos familia, deudas, hijos que alimentar. Y la empresa lo sabe. Y juegan con nuestro miedo.\n\nMi esposa me vio la cara cuando llegué. "¿Otro susto en la planta?", me preguntó. Solo asentí. Vi la preocupación en sus ojos, la misma que veo en las esposas de mis compañeros. Ellas también viven con el miedo de que un día la llamada que reciban no sea para avisar que ya vamos para la casa.\n\nMi mayor miedo no es accidentarme yo. Es ver a un amigo, a un compadre como Toño, quedar mutilado de por vida por una negligencia que todos conocíamos. Me aterra la culpa de no haber hecho más, de no haber gritado más fuerte, de no haber encontrado la forma de obligarlos a escuchar.\n\nNecesitamos una prueba. Algo que no puedan ignorar. Una forma de reportar las cosas que quede registrada fuera de su control. Una forma de demostrar que no es "la opinión de Richie", sino un problema real que está pasando una y otra vez. Una forma de hablar sin miedo a que nos corten la cabeza.\n\nSi no, solo estamos esperando a ver quién será el próximo en no tener la misma suerte que tuvo Toño hoy.\n\nRicardo.`,
+                    infoGeneral: { "Edad": "29 años", "Ubicación": "Querétaro, México", "Nivel Educativo": "Técnico en Mantenimiento Industrial", "Ocupación Actual": "Operario de maquinaria y representante en el Comité de Seguridad" },
+                    situacion: { "Principales Retos": "Miedo a represalias, presión por productividad, sistemas de reporte obsoletos, falta de empoderamiento.", "Impacto Cotidiano": "Ansiedad y desconfianza, riesgo físico constante, desmotivación.", "Carencias Críticas": "Canal de reporte anónimo, formación que empodere, cultura de seguridad genuina." },
+                    metas: { "Logros Deseados con Kuida": "Implementar un canal de reporte anónimo, obtener 'segunda opinión' de IA, crear un tablero público.", "Objetivos Profesionales": "Transformar la cultura de seguridad, trabajar sin miedo, ser promovido a un puesto en SST.", "Estilo de Vida Soñado": "Trabajo con dignidad y seguridad, ambiente de confianza, tranquilidad para su familia." },
+                    psicografico: { "Valores": "Justicia, Solidaridad, Seguridad como Derecho, Coraje, Responsabilidad.", "Rasgos (y Scores)": { "Observador": 4, "Empático": 5, "Tenaz": 4, "Colaborativo": 4, "Valiente": 3 }, "Intereses": "Anonimato y confianza, tecnología para la transparencia, empoderamiento por información." },
+                    dolor: { "Problemas Críticos": "Necesita romper la cultura del miedo garantizando el anonimato y haciendo transparente la gestión de riesgos.", "Emociones Asociadas": ["Miedo", "Indignación", "Desesperanza", "Empoderamiento", "Seguridad"] },
+                    comportamiento: { "Canales de Información": "Conversaciones con compañeros, sindicato, grupos de Facebook, experiencia propia.", "Barreras para la Adopción": "Miedo a la vigilancia, brecha digital, presión de pares, falta de autoridad.", "Factores de Decisión": "Garantía de anonimato, apoyo de líderes respetados, resultados visibles." },
+                    impacto: { "Transformación": "Pasará de ser un trabajador silenciado a un líder del cambio, respetado y eficaz.", "Resultados Esperados": "Aumentar radicalmente el reporte de riesgos, reducir accidentes, obtener una promoción." }
+                },
+                {
+                    id: 7,
+                    nombre: "Marco Antonio Vélez",
+                    ocupacion: "Empresario de Transporte",
+                    icono: "🚚",
+                    diario: `29 de octubre, 2025. Miércoles.\n\n3:30 AM\n\nEl teléfono sonó a las 3:15 AM. Uno nunca se acostumbra a ese sonido. Es un latigazo de hielo que te atraviesa el pecho. Nunca es para dar buenas noticias.\n\nEra Miguel, el conductor del camión 7. La voz le temblaba. "Jefe, me acaban de robar. Se llevaron todo". Estaba en La Paila, en una de esas gasolineras que se supone que son seguras. Lo encañonaron mientras dormía en la cabina. Le quitaron la carga de electrodomésticos, el celular, la plata. A él, gracias a Dios, no le hicieron nada. Lo dejaron amarrado en el camarote.\n\nLlevo despierto desde entonces. Ya llamé a la policía, al seguro, al cliente. Mil llamadas. Pero mi cabeza no está ahí. Mi cabeza está con Miguel, solo, asustado, a 500 kilómetros de su casa. Y está en la deuda que este robo me va a dejar. El seguro cubrirá una parte, pero el deducible es altísimo. Y la reputación... la reputación es lo que más duele. ¿Cómo le explico al cliente que su mercancía de 200 millones de pesos desapareció?\n\nCuando empecé en esto, hace treinta años, con un solo camión viejo que me heredó mi padre, el negocio era más noble. Era de madrugar, de aguantar carretera, de conocer las rutas como la palma de la mano. El peligro era una llanta estallada o un derrumbe en la montaña. Ahora el peligro tiene cara de hombre y una pistola en la mano.\n\nMi sueño siempre fue simple: tener una flota de camiones que funcionara como un reloj. Camiones bien mantenidos, conductores responsables, clientes satisfechos. "Transportes Vélez: ¡Cumplimos!", ese es el lema que pinté en mi primer camión. Quería construir un patrimonio para mis hijos, una empresa respetada.\n\nPero hoy me siento más un gestor de crisis que un empresario. Paso los días y las noches con el celular pegado a la mano, esperando la siguiente mala noticia. Un accidente por un micro-sueño. Un camión varado por una falla mecánica. Un robo como el de esta noche. El estrés es un motor que nunca se apaga. Me está comiendo por dentro. Mi esposa dice que hasta dormido aprieto la mandíbula.\n\nTengo buenos conductores, hombres de familia, trabajadores. Pero son humanos. Se cansan. Se distraen. Se asustan. ¿Cómo puedo estar yo en 12 cabinas al mismo tiempo, vigilando, asegurándome de que todo esté bien? Es imposible. Confío en ellos, pero la carretera no perdona. Un segundo de cansancio puede costar una vida.\n\nMi mayor miedo es ese. La llamada que no sea sobre la carga, sino sobre el conductor. La llamada que me diga que uno de mis muchachos no va a volver a casa. Siento el peso de esas vidas sobre mis hombros. Son mi responsabilidad. Y a veces, esa carga es demasiado pesada.\n\nNecesito ojos en la carretera. Necesito una forma de saber si un conductor está cabeceando de sueño. Necesito una forma de saber si una ruta se ha vuelto peligrosa en la última hora. Necesito una forma de anticiparme al desastre, no solo de reaccionar a él. Necesito que la tecnología haga lo que yo no puedo: estar en todas partes al mismo tiempo.\n\nSi no, este negocio me va a matar. Ya sea por un infarto o por la quiebra.\n\nVoy a ver si puedo dormir una hora antes de que amanezca. Mañana tengo que ir a buscar a Miguel y empezar a calcular cuánto perdimos esta noche. Otra vez.\n\nMarco.`,
+                    infoGeneral: { "Edad": "55 años", "Ubicación": "Guayaquil, Ecuador", "Nivel Educativo": "Bachillerato", "Ocupación Actual": "Dueño de una pequeña flota de 12 camiones de transporte" },
+                    situacion: { "Principales Retos": "Costos volátiles, inseguridad en carreteras, tecnología costosa, bienestar del conductor (fatiga).", "Impacto Cotidiano": "Angustia y estrés crónico, presión financiera, vulnerabilidad ante accidentes.", "Carencias Críticas": "Tecnología de seguridad asequible, financiamiento, infraestructura vial segura." },
+                    metas: { "Logros Deseados con Kuida": "Implementar 'copiloto virtual' de IA, análisis predictivo de rutas, mantenimiento predictivo, obtener 'Safety Score'.", "Objetivos Profesionales": "Posicionar su empresa como la más segura, reducir siniestralidad a casi cero, atraer y retener a los mejores.", "Estilo de Vida Soñado": "Gerencia proactiva, confianza para delegar, reputación de excelencia, tranquilidad." },
+                    psicografico: { "Valores": "Confiabilidad, Responsabilidad, Resiliencia, Pragmatismo, Legado.", "Rasgos (y Scores)": { "Astuto": 4, "Decisivo": 5, "Estoico": 4, "Protector": 5, "Averso al Riesgo": 3 }, "Intereses": "Gestión de riesgos en tiempo real, reducción de costos, tecnología robusta, ROI claro." },
+                    dolor: { "Problemas Críticos": "Necesita 'ojos en la carretera' para anticiparse a los riesgos que no puede controlar: fatiga, inseguridad y fallas mecánicas.", "Emociones Asociadas": ["Angustia", "Estrés Financiero", "Impotencia", "Control", "Tranquilidad"] },
+                    comportamiento: { "Canales de Información": "Revistas del sector, conversaciones en paraderos, ferias de transporte, proveedores.", "Barreras para la Adopción": "Inversión inicial, complejidad de instalación, resistencia de conductores, durabilidad.", "Factores de Decisión": "Prueba piloto, ROI claro, testimonios de otros transportistas." },
+                    impacto: { "Transformación": "Pasará de ser un empresario que apaga incendios a un gerente estratégico proactivo.", "Resultados Esperados": "Reducir drásticamente accidentes y robos, bajar prima de seguro, aumentar vida útil de vehículos." }
+                }
+            ];
+
+            const selectorContainer = document.getElementById('persona-selector');
+            const modal = document.getElementById('persona-modal');
+            const modalContent = document.getElementById('modal-content');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            
+            let activePersonaId = null;
+            let radarChart = null;
+
+            function renderPersonaSelector() {
+                personasData.forEach(persona => {
+                    const card = document.createElement('div');
+                    card.className = 'p-4 bg-white rounded-xl border-2 border-transparent shadow-md hover:shadow-xl hover:border-teal-500 cursor-pointer transition-all duration-300 flex flex-col items-center text-center';
+                    card.dataset.id = persona.id;
+                    card.innerHTML = `
+                        <div class="text-4xl mb-2">${persona.icono}</div>
+                        <h3 class="font-semibold text-sm md:text-base text-teal-800">${persona.nombre}</h3>
+                        <p class="text-xs text-gray-500">${persona.ocupacion}</p>
+                    `;
+                    card.addEventListener('click', () => openModal(persona.id));
+                    selectorContainer.appendChild(card);
+                });
+            }
+
+            function openModal(id) {
+                activePersonaId = id;
+                const persona = personasData.find(p => p.id === id);
+                if (!persona) return;
+
+                document.body.style.overflow = 'hidden';
+                modalTitle.textContent = persona.nombre;
+                renderPersonaDetail(persona);
+                modal.classList.remove('hidden');
+
+                document.querySelectorAll('#persona-selector > div').forEach(card => {
+                    card.classList.remove('active-persona-card');
+                    if (parseInt(card.dataset.id) === id) {
+                        card.classList.add('active-persona-card');
+                    }
+                });
+            }
+
+            function closeModal() {
+                document.body.style.overflow = '';
+                modal.classList.add('hidden');
+                modalBody.innerHTML = ''; 
+                activePersonaId = null;
+                document.querySelectorAll('#persona-selector > div').forEach(card => {
+                    card.classList.remove('active-persona-card');
+                });
+            }
+
+            closeModalBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            function renderPersonaDetail(persona) {
+                const tabs = [
+                    { key: 'infoGeneral', title: 'General' },
+                    { key: 'diario', title: 'Diario' },
+                    { key: 'situacion', title: 'Situación Actual' },
+                    { key: 'metas', title: 'Metas' },
+                    { key: 'psicografico', title: 'Perfil Psicográfico' },
+                    { key: 'dolor', title: 'Puntos de Dolor' },
+                    { key: 'comportamiento', title: 'Decisiones' },
+                    { key: 'impacto', title: 'Impacto Esperado' },
+                ];
+                
+                let tabsHTML = '<div class="flex flex-wrap border-b border-gray-200 mb-6">';
+                tabs.forEach((tab, index) => {
+                    tabsHTML += `<button data-tab="${tab.key}" class="px-4 py-2 font-medium text-sm border-b-2 ${index === 0 ? 'active-tab' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}">${tab.title}</button>`;
+                });
+                tabsHTML += '</div>';
+
+                let tabContentHTML = '<div id="tab-content">';
+                tabs.forEach((tab, index) => {
+                    tabContentHTML += `<div id="content-${tab.key}" class="${index > 0 ? 'hidden' : ''}">`;
+                    
+                    const sectionData = persona[tab.key];
+                    if (tab.key === 'psicografico') {
+                        tabContentHTML += `
+                            <div class="grid md:grid-cols-2 gap-8 items-center">
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2 text-teal-700">Valores</h4>
+                                    <p class="mb-4 text-gray-600">${sectionData.Valores}</p>
+                                    <h4 class="font-semibold text-lg mb-2 text-teal-700">Intereses Clave</h4>
+                                    <p class="text-gray-600">${sectionData.Intereses}</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2 text-center text-teal-700">Rasgos de Personalidad</h4>
+                                    <div class="chart-container"><canvas id="radarChart"></canvas></div>
+                                </div>
+                            </div>
+                        `;
+                    } else if (tab.key === 'diario') {
+                        const diaryEntries = persona.diario.split('\n').filter(line => line.trim() !== '');
+                        tabContentHTML += '<div class="prose max-w-none text-gray-600">';
+                        diaryEntries.forEach(line => {
+                            if(line.match(/^\d{2} de/)) {
+                                tabContentHTML += `<p class="font-semibold text-gray-700 mt-4">${line}</p>`;
+                            } else {
+                                tabContentHTML += `<p>${line}</p>`;
+                            }
+                        });
+                        tabContentHTML += '</div>';
+                    } else if(tab.key === 'dolor') {
+                        tabContentHTML += `<h4 class="font-semibold text-lg mb-2 text-teal-700">Problemas Críticos</h4>`;
+                        tabContentHTML += `<p class="mb-6 text-gray-600">${sectionData["Problemas Críticos"]}</p>`;
+                        tabContentHTML += `<h4 class="font-semibold text-lg mb-2 text-teal-700">Emociones Asociadas</h4>`;
+                        tabContentHTML += '<div class="flex flex-wrap gap-2">';
+                        sectionData["Emociones Asociadas"].forEach(emocion => {
+                            tabContentHTML += `<span class="bg-teal-100 text-teal-800 text-sm font-medium px-3 py-1 rounded-full">${emocion}</span>`
+                        });
+                        tabContentHTML += '</div>';
+                    } else {
+                        Object.entries(sectionData).forEach(([key, value]) => {
+                           tabContentHTML += `<div class="mb-4"><h4 class="font-semibold text-lg text-teal-700">${key.replace(/([A-Z])/g, ' $1').trim()}</h4><p class="text-gray-600">${value}</p></div>`;
+                        });
+                    }
+
+                    tabContentHTML += '</div>';
+                });
+                tabContentHTML += '</div>';
+                
+                modalBody.innerHTML = tabsHTML + tabContentHTML;
+
+                if (persona.psicografico && persona.psicografico['Rasgos (y Scores)']) {
+                     setTimeout(() => createOrUpdateRadarChart(persona.psicografico['Rasgos (y Scores)']), 50);
+                }
+
+                modalBody.querySelectorAll('[data-tab]').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const tabKey = e.target.dataset.tab;
+                        
+                        modalBody.querySelectorAll('[data-tab]').forEach(btn => btn.classList.remove('active-tab'));
+                        e.target.classList.add('active-tab');
+                        
+                        modalBody.querySelectorAll('#tab-content > div').forEach(content => content.classList.add('hidden'));
+                        document.getElementById(`content-${tabKey}`).classList.remove('hidden');
+                    });
+                });
+            }
+            
+            function createOrUpdateRadarChart(data) {
+                const ctx = document.getElementById('radarChart')?.getContext('2d');
+                if (!ctx) return;
+
+                if (radarChart) {
+                    radarChart.destroy();
+                }
+                
+                const labels = Object.keys(data);
+                const values = Object.values(data);
+
+                radarChart = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Puntaje del Rasgo',
+                            data: values,
+                            backgroundColor: 'rgba(13, 148, 136, 0.2)',
+                            borderColor: 'rgba(13, 148, 136, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(13, 148, 136, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(13, 148, 136, 1)'
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 5,
+                                ticks: {
+                                    stepSize: 1,
+                                    backdropColor: 'transparent'
+                                },
+                                pointLabels: {
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderPersonaSelector();
+        });
+    </script>
+
+</body>
+</html>
+
+
